@@ -1,0 +1,15 @@
+dm_control
+dm_env
+numpy
+opencv-python
+flask
+tyro
+tqdm
+pyyaml
+websockets>=11.0
+msgpack>=1.0.5
+pillow>=9.0.0
+dm-tree>=0.1.8
+# tree package often causes confusion, dm-tree provides tree. 
+# Explicitly adding it if required by library metadata, but usually dm-tree is enough.
+# Skipping 'tree' to avoid conflicts unless explicitly needed.

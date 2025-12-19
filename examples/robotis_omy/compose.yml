@@ -1,0 +1,76 @@
+services:
+  robotis_omy:
+    build: 
+      context: ../..
+      dockerfile: examples/robotis_omy/Dockerfile
+    image: openpi-omy:latest
+    container_name: openpi_omy_robot
+    
+    # User's hardware settings
+    privileged: true
+    network_mode: host
+    ipc: host
+    pid: host
+    
+    # Capabilities for realtime
+    cap_add:
+      - SYS_NICE
+    ulimits:
+      rtprio: 99
+      rttime: -1
+      memlock: 8428281856
+
+    volumes:
+      # Code mounts
+      - ../..:/app
+      # Hardware mounts
+      - /dev:/dev
+      - /dev/shm:/dev/shm
+      # Optional: User's physical_ai_tools if local
+      - ../../../physical_ai_tools:/app/physical_ai_tools
+      
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - ROS_DOMAIN_ID=30
+      - PYTHONPATH=/app:/app/src:/app/packages/openpi-client/src:/app/physical_ai_tools/physical_ai_server
+    
+    # GPU Access
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+    command: bash
+    tty: true
+    stdin_open: true
+
+  openpi_server:
+    image: openpi_server
+    build:
+      context: ../..
+      dockerfile: scripts/docker/serve_policy.Dockerfile
+    init: true
+    tty: true
+    network_mode: host
+    volumes:
+      - ../..:/app
+      - ${OPENPI_DATA_HOME:-~/.cache/openpi}:/openpi_assets
+    environment:
+      - SERVER_ARGS
+      - OPENPI_DATA_HOME=/openpi_assets
+      - IS_DOCKER=true
+      # Select default environment (e.g. ALOHA_SIM) to download/run a checkpoint
+      # Note: This model is for Aloha, so actions won't match OMY correctly, but serves for testing.
+      - SERVER_ARGS=--env aloha_sim
+      
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
