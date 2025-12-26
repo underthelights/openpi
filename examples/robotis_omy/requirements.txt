@@ -13,3 +13,4 @@ dm-tree>=0.1.8
 # tree package often causes confusion, dm-tree provides tree. 
 # Explicitly adding it if required by library metadata, but usually dm-tree is enough.
 # Skipping 'tree' to avoid conflicts unless explicitly needed.
+einops
